@@ -2,12 +2,12 @@ const express = require('express');
 
 const readTalker = require('./utils/readTalker');
 const generateToken = require('./utils/generateToken');
+const { isEmailValid, isPasswordValid } = require('./middlewares/loginValidations');
 
 const app = express();
 app.use(express.json());
 
 const HTTP_OK_STATUS = 200;
-const UNAUTHORIZED_STATUS = 401;
 const NOT_FOUND_STATUS = 404;
 const PORT = process.env.PORT || '3001';
 
@@ -32,13 +32,9 @@ app.get('/talker/:id', async (req, res) => {
   return res.status(HTTP_OK_STATUS).json(talker);
 });
 
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  if ([email, password].includes(undefined)) {
-    return res.status(UNAUTHORIZED_STATUS).json({ message: 'Campos ausentes' });
-  }
+app.post('/login', isEmailValid, isPasswordValid, (req, res) => {
   const token = generateToken();
-  return res.status(HTTP_OK_STATUS).json({ token });
+  res.status(HTTP_OK_STATUS).json({ token });
 });
 
 app.listen(PORT, () => {
