@@ -3,11 +3,14 @@ const express = require('express');
 const readTalker = require('./utils/readTalker');
 const generateToken = require('./utils/generateToken');
 const { isEmailValid, isPasswordValid } = require('./middlewares/loginValidations');
+const isAuthorized = require('./middlewares/userAuthentication');
+const { isNameValid, isAgeValid } = require('./middlewares/talkerValidations');
 
 const app = express();
 app.use(express.json());
 
 const HTTP_OK_STATUS = 200;
+const CREATED_STATUS = 201;
 const NOT_FOUND_STATUS = 404;
 const PORT = process.env.PORT || '3001';
 
@@ -35,6 +38,19 @@ app.get('/talker/:id', async (req, res) => {
 app.post('/login', isEmailValid, isPasswordValid, (req, res) => {
   const token = generateToken();
   res.status(HTTP_OK_STATUS).json({ token });
+});
+
+app.post('/talker', isAuthorized, isNameValid, isAgeValid, async (req, res) => {
+  const { name, age, talk } = req.body;
+  const talkers = await readTalker();
+  const newTalker = {
+    id: talkers.length + 1,
+    name,
+    age,
+    talk,
+  };
+  talkers.push(newTalker);
+  res.status(CREATED_STATUS).json(newTalker);
 });
 
 app.listen(PORT, () => {
