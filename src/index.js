@@ -1,10 +1,18 @@
 const express = require('express');
+const fs = require('fs').promises;
 
 const readTalker = require('./utils/readTalker');
 const generateToken = require('./utils/generateToken');
 const { isEmailValid, isPasswordValid } = require('./middlewares/loginValidations');
 const isAuthorized = require('./middlewares/userAuthentication');
-const { isNameValid, isAgeValid } = require('./middlewares/talkerValidations');
+const { 
+  isNameValid, 
+  isAgeValid,   
+  isTalkValid,
+  isWatchedAtValid,
+  isRateCompleted,
+  isRateInsert, 
+} = require('./middlewares/talkerValidations');
 
 const app = express();
 app.use(express.json());
@@ -40,7 +48,15 @@ app.post('/login', isEmailValid, isPasswordValid, (req, res) => {
   res.status(HTTP_OK_STATUS).json({ token });
 });
 
-app.post('/talker', isAuthorized, isNameValid, isAgeValid, async (req, res) => {
+app.post('/talker',
+isAuthorized,
+isNameValid, 
+isAgeValid,
+isTalkValid, 
+isWatchedAtValid,
+isRateCompleted,
+isRateInsert, 
+async (req, res) => {
   const { name, age, talk } = req.body;
   const talkers = await readTalker();
   const newTalker = {
@@ -49,8 +65,8 @@ app.post('/talker', isAuthorized, isNameValid, isAgeValid, async (req, res) => {
     age,
     talk,
   };
-  talkers.push(newTalker);
-  res.status(CREATED_STATUS).json(newTalker);
+  fs.writeFile('./src/talker.json', JSON.stringify([...talkers, newTalker]), 'utf-8');  
+  return res.status(CREATED_STATUS).json(newTalker);
 });
 
 app.listen(PORT, () => {
