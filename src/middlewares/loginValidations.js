@@ -23,7 +23,7 @@ const isEmailValid = (req, res, next) => {
 
 const isPasswordValid = (req, res, next) => {
   const { password } = req.body;
-  if (!password) { 
+  if (!password) {
     return res.status(BAD_REQUEST_STATUS).json(
       { message: 'O campo "password" é obrigatório' },
     );
@@ -31,7 +31,7 @@ const isPasswordValid = (req, res, next) => {
   if (password.length < 6) {
     return res.status(BAD_REQUEST_STATUS).json(
       { message: 'O "password" deve ter pelo menos 6 caracteres' },
-    );    
+    );
   }
   next();
 };
