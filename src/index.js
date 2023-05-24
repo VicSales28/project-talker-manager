@@ -19,6 +19,7 @@ app.use(express.json());
 
 const HTTP_OK_STATUS = 200;
 const CREATED_STATUS = 201;
+const NO_CONTENT_STATUS = 204;
 const NOT_FOUND_STATUS = 404;
 const PORT = process.env.PORT || '3001';
 
@@ -88,6 +89,15 @@ app.put('/talker/:id',
     talkers[talkerIndex] = updatedTalker;
     fs.writeFile('./src/talker.json', JSON.stringify(talkers), 'utf-8');
     return res.status(HTTP_OK_STATUS).json(updatedTalker);
+  });
+
+app.delete('/talker/:id',
+  isAuthorized,
+  async (req, res) => {
+    const talkers = await readTalker();
+    const talkersFiltered = talkers.filter(({ id }) => id !== Number(req.params.id));
+    fs.writeFile('./src/talker.json', JSON.stringify(talkersFiltered), 'utf-8');
+    return res.status(NO_CONTENT_STATUS).end();
   });
 
 app.listen(PORT, () => {
